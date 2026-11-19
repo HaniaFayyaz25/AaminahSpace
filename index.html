@@ -725,8 +725,20 @@
 
 <div id="adminStudio" class="admin-studio" hidden><main class="admin-shell">
 <header class="admin-top"><div class="brand">AAMINAH<span>SPACE</span> <span style="color:#777;font-weight:400;letter-spacing:.08em">/ STUDIO</span></div><a href="/" style="color:var(--green);font-size:12px">View portfolio ↗</a></header>
-<section class="admin-hero"><div class="eyebrow">Private workspace</div><h1>Your work, in your hands.</h1><p>Add projects, update descriptions, upload visuals, and choose what appears on your portfolio. Sign in with your invited admin email.</p></section>
-<section id="auth" class="admin-panel admin-auth"><div class="eyebrow">Welcome back</div><h2 class="admin-formhead">Sign in to your studio</h2><div class="admin-field"><label for="email">Email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div><div class="admin-field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Your password"></div><div class="admin-row"><button class="admin-btn" id="signin" type="button">Sign in</button><button class="admin-btn secondary" id="signup" type="button">Create account</button></div><p class="admin-muted">Your email must be authorized by the portfolio owner. New accounts cannot edit anything until approved.</p><button class="admin-btn secondary" id="reset" type="button" style="margin-top:4px">Send password reset link</button><div id="authmsg" class="admin-notice admin-hidden"></div></section>
+<section class="admin-hero"><div class="eyebrow">A little space for the work behind the work</div><h1>Your creative workspace.</h1><p>Keep your projects, stories and portfolio updates in one calm little corner. Sign in with Aaminah&rsquo;s studio email to get started.</p></section>
+<section id="auth" class="admin-panel admin-auth">
+  <div class="admin-auth-kicker"><span class="admin-spark">✳</span><span>STUDIO ACCESS</span></div>
+  <h2 class="admin-formhead">Good to see you.</h2>
+  <p class="admin-auth-intro">Sign in and pick up right where you left off.</p>
+  <form id="authForm" novalidate>
+    <div class="admin-field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" placeholder="name@example.com" required></div>
+    <div class="admin-field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required minlength="8"></div>
+    <button class="admin-btn admin-primary-btn" id="signin" type="submit">Sign in <span aria-hidden="true">↗</span></button>
+  </form>
+  <div class="admin-auth-links"><button class="admin-text-btn" id="signup" type="button">First time here? Create your login</button><button class="admin-text-btn" id="reset" type="button">Forgot your password?</button></div>
+  <p class="admin-auth-note"><span aria-hidden="true">✦</span> Studio access is reserved for Aaminah&rsquo;s approved email address.</p>
+  <div id="authmsg" class="admin-notice admin-hidden" role="status" aria-live="polite"></div>
+</section>
 <section id="dashboard" class="admin-hidden"><div class="admin-row" style="justify-content:space-between"><div><div class="eyebrow">Content manager</div><h2 class="admin-formhead">Projects & case studies</h2><p class="admin-muted">Changes save to the portfolio database. Publish when you're ready.</p></div><button class="admin-btn secondary" id="signout" type="button">Sign out</button></div>
 <div class="admin-dash"><section class="admin-panel"><div class="eyebrow">Your portfolio</div><div id="projectList" class="admin-items" style="margin-top:12px">Loading projects…</div></section>
 <section class="admin-panel"><div class="eyebrow">Editor</div><h3 class="admin-formhead" id="editorTitle">Add a project</h3><form id="projectForm">
@@ -751,25 +763,192 @@
 <script>
 const SUPABASE_URL='https://nuxeecznwbtxuxgbfkjq.supabase.co';
 const SUPABASE_KEY='sb_publishable_eUxu_ZKX2SeZTjw4m3p5og_31Rjs_qI';
+const ADMIN_EMAIL='khanaaminah3@gmail.com';
+const ADMIN_REDIRECT='https://aaminahspace.vercel.app/#admin';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
-function message(id,text){$(id).textContent=text;$(id).classList.remove('admin-hidden')}
+let authBusy=false;
+function authMessage(text,type='info'){
+  const box=$('authmsg');
+  box.textContent=text;
+  box.classList.remove('admin-hidden','is-error','is-success');
+  box.classList.add(type==='error'?'is-error':type==='success'?'is-success':'is-info');
+}
+function clearAuthMessage(){
+  $('authmsg').classList.add('admin-hidden');
+  $('authmsg').classList.remove('is-error','is-success','is-info');
+}
+function setAuthBusy(busy,label){
+  authBusy=busy;
+  ['signin','signup','reset'].forEach(id=>$(id).disabled=busy);
+  $('signin').innerHTML=busy?label:'Sign in <span aria-hidden="true">↗</span>';
+}
+function credentials(){
+  const email=$('email').value.trim().toLowerCase();
+  const password=$('password').value;
+  if(!email){authMessage('Add your email address to continue.','error');$('email').focus();return null}
+  if(email!==ADMIN_EMAIL){authMessage('This studio is set up for Aaminah’s approved email address. Please use khanaaminah3@gmail.com.','error');$('email').focus();return null}
+  return {email,password};
+}
 function slugify(s){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
-async function authState(){const {data:{session}}=await db.auth.getSession();$('auth').classList.toggle('admin-hidden',!!session);$('dashboard').classList.toggle('admin-hidden',!session);if(session)loadProjects()}
-db.auth.onAuthStateChange(()=>authState());
-$('signin').onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)message('authmsg',error.message);else authState()};
-$('signup').onclick=async()=>{const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value,options:{emailRedirectTo:location.origin+'/#admin'}});message('authmsg',error?'Could not create account: '+error.message:'Check your inbox to confirm your email. Your account still needs admin authorization before editing.')};
-$('reset').onclick=async()=>{const {error}=await db.auth.resetPasswordForEmail($('email').value.trim(),{redirectTo:location.origin+'/#admin'});message('authmsg',error?error.message:'If this email has an account, a password reset link is on its way.')};
-$('signout').onclick=async()=>{await db.auth.signOut();authState()};
+function friendlyAuthError(error){
+  const msg=(error?.message||'').toLowerCase();
+  if(msg.includes('invalid login credentials'))return 'That email and password combination didn’t match. Check both and try again.';
+  if(msg.includes('email not confirmed'))return 'One quick step first: open the confirmation email sent by Supabase, confirm the address, then come back to sign in.';
+  if(msg.includes('password should be at least')||msg.includes('weak password'))return 'Choose a stronger password with at least 8 characters.';
+  if(msg.includes('already registered')||msg.includes('already been registered'))return 'This email already has a login. Try signing in, or use “Forgot your password?” to set a new one.';
+  if(msg.includes('rate limit')||msg.includes('after 45 seconds')||msg.includes('after 60 seconds'))return 'The email service needs a short breather. Wait a minute, then try again.';
+  if(msg.includes('fetch')||msg.includes('network'))return 'We couldn’t reach the studio just now. Check your connection and try again.';
+  return error?.message||'Something went wrong. Please try again in a moment.';
+}
+function showDashboard(){
+  $('auth').classList.add('admin-hidden');
+  $('dashboard').classList.remove('admin-hidden');
+}
+function showSignIn(){
+  $('dashboard').classList.add('admin-hidden');
+  $('auth').classList.remove('admin-hidden');
+}
+async function verifyAdmin(){
+  const {data:{session},error}=await db.auth.getSession();
+  if(error||!session){showSignIn();return false}
+  if((session.user.email||'').toLowerCase()!==ADMIN_EMAIL){
+    await db.auth.signOut();
+    showSignIn();
+    authMessage('This login doesn’t have access to this studio. Please use Aaminah’s approved email address.','error');
+    return false;
+  }
+  const {data:allowed,error:permissionError}=await db.rpc('is_portfolio_admin');
+  if(permissionError||allowed!==true){
+    await db.auth.signOut();
+    showSignIn();
+    authMessage('Your email is signed in, but studio access has not been enabled yet. Please ask the portfolio owner to approve it.','error');
+    return false;
+  }
+  showDashboard();
+  await loadProjects();
+  return true;
+}
+db.auth.onAuthStateChange((event,session)=>{
+  // Keep this callback synchronous: Supabase auth events run under an internal lock.
+  if(event==='SIGNED_OUT'){showSignIn();return}
+  if(session){
+    if((session.user.email||'').toLowerCase()===ADMIN_EMAIL){
+      showDashboard();
+      Promise.resolve().then(()=>loadProjects());
+    }else{
+      showSignIn();
+      authMessage('This login doesn’t have access to this studio. Please use Aaminah’s approved email address.','error');
+      Promise.resolve().then(()=>db.auth.signOut());
+    }
+  }
+});
+$('authForm').addEventListener('submit',async e=>{
+  e.preventDefault();if(authBusy)return;
+  const c=credentials();if(!c)return;
+  if(!c.password){authMessage('Enter your password to sign in.','error');$('password').focus();return}
+  setAuthBusy(true,'Signing you in…');clearAuthMessage();
+  try{
+    const {error}=await db.auth.signInWithPassword({email:c.email,password:c.password});
+    if(error)throw error;
+    await verifyAdmin();
+  }catch(error){authMessage(friendlyAuthError(error),'error')}
+  finally{setAuthBusy(false)}
+});
+$('signup').onclick=async()=>{
+  if(authBusy)return;
+  const c=credentials();if(!c)return;
+  if(c.password.length<8){authMessage('Create a password with at least 8 characters, then try again.','error');$('password').focus();return}
+  setAuthBusy(true,'Creating your login…');clearAuthMessage();
+  try{
+    const {data,error}=await db.auth.signUp({email:c.email,password:c.password,options:{emailRedirectTo:ADMIN_REDIRECT}});
+    if(error)throw error;
+    if(data.session){await verifyAdmin()}
+    else authMessage('You’re nearly there. Check Aaminah’s inbox for the confirmation email, then return here to sign in. If it doesn’t arrive, wait a minute before trying again.','success');
+  }catch(error){authMessage(friendlyAuthError(error),'error')}
+  finally{setAuthBusy(false)}
+};
+$('reset').onclick=async()=>{
+  if(authBusy)return;
+  const email=$('email').value.trim().toLowerCase();
+  if(!email){authMessage('Add the studio email address first, and we’ll send a reset link.','error');$('email').focus();return}
+  if(email!==ADMIN_EMAIL){authMessage('Password reset is available for Aaminah’s approved studio email only.','error');$('email').focus();return}
+  setAuthBusy(true,'Sending reset link…');clearAuthMessage();
+  try{
+    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:ADMIN_REDIRECT});
+    if(error)throw error;
+    authMessage('If a login exists for this address, a password reset link is on its way. Check the inbox and spam folder.','success');
+  }catch(error){authMessage(friendlyAuthError(error),'error')}
+  finally{setAuthBusy(false)}
+};
+$('signout').onclick=async()=>{
+  const {error}=await db.auth.signOut();
+  if(error)authMessage(friendlyAuthError(error),'error');
+  showSignIn();
+};
 $('title').addEventListener('input',()=>{if(!$('projectId').value)$('slug').value=slugify($('title').value)});
 $('new').onclick=clearForm;
-function clearForm(){$('projectForm').reset();$('coverHint').dataset.url='';$('projectId').value='';$('category').value='Project';$('sortOrder').value=0;$('editorTitle').textContent='Add a project';$('delete').classList.add('admin-hidden');$('coverHint').textContent='Upload JPG, PNG, WebP or AVIF, max 10 MB.';$('savemsg').classList.add('admin-hidden')}
-async function loadProjects(){const {data,error}=await db.from('portfolio_projects').select('*').order('sort_order').order('created_at',{ascending:false});if(error){$('projectList').textContent=error.message;return} $('projectList').innerHTML='';if(!data.length){$('projectList').textContent='No projects yet. Add your first one →';return}data.forEach(p=>{const el=document.createElement('div');el.className='admin-item';const left=document.createElement('div');left.innerHTML='<strong></strong><span class="admin-tag"></span>';left.querySelector('strong').textContent=p.title;left.querySelector('.admin-tag').textContent=p.category||'Project';const right=document.createElement('div');right.className='admin-row';const badge=document.createElement('span');badge.className='admin-status '+(p.is_published?'live':'');badge.textContent=p.is_published?'Published':'Draft';const edit=document.createElement('button');edit.type='button';edit.className='admin-btn secondary';edit.textContent='Edit';edit.onclick=()=>editProject(p);right.append(badge,edit);el.append(left,right);$('projectList').append(el)})}
-function editProject(p){$('projectId').value=p.id;$('title').value=p.title;$('slug').value=p.slug;$('category').value=p.category;$('summary').value=p.summary;$('description').value=p.description;$('liveUrl').value=p.live_url||'';$('sortOrder').value=p.sort_order;$('published').checked=p.is_published;$('coverHint').dataset.url=p.cover_image||'';$('coverHint').textContent=p.cover_image?'Current cover image is saved. Choose another file to replace it.':'No cover image selected.';$('editorTitle').textContent='Edit project';$('delete').classList.remove('admin-hidden');$('savemsg').classList.add('admin-hidden');window.scrollTo({top:document.querySelector('#projectForm').getBoundingClientRect().top+scrollY-30,behavior:'smooth'})}
-async function uploadCover(file){if(!file)return null;if(file.size>10*1024*1024)throw new Error('Image must be under 10 MB.');if(!/^image\/(jpeg|png|webp|avif)$/.test(file.type))throw new Error('Choose a JPG, PNG, WebP or AVIF image.');const ext=file.name.split('.').pop().toLowerCase();const path=Date.now()+'-'+crypto.randomUUID()+'.'+ext;const {error}=await db.storage.from('portfolio-media').upload(path,file,{upsert:false,contentType:file.type});if(error)throw error;const {data}=db.storage.from('portfolio-media').getPublicUrl(path);return data.publicUrl}
-$('projectForm').onsubmit=async e=>{e.preventDefault();$('save').disabled=true;try{let cover=$('coverHint').dataset.url||null;const file=$('coverFile').files[0];if(file)cover=await uploadCover(file);const payload={title:$('title').value.trim(),slug:slugify($('slug').value),category:$('category').value.trim()||'Project',summary:$('summary').value.trim(),description:$('description').value.trim(),live_url:$('liveUrl').value.trim()||null,sort_order:Number($('sortOrder').value)||0,is_published:$('published').checked,cover_image:cover,updated_at:new Date().toISOString()};let q=$('projectId').value?db.from('portfolio_projects').update(payload).eq('id',$('projectId').value):db.from('portfolio_projects').insert(payload);const {error}=await q;if(error)throw error;message('savemsg','Saved successfully.');clearForm();await loadProjects()}catch(err){message('savemsg',err.message)}finally{$('save').disabled=false}};
-$('delete').onclick=async()=>{const id=$('projectId').value;if(!id||!confirm('Delete this project and its media records?'))return;const {error}=await db.from('portfolio_projects').delete().eq('id',id);if(error)message('savemsg',error.message);else{clearForm();loadProjects()}};
-authState();
+function clearForm(){
+  $('projectForm').reset();$('coverHint').dataset.url='';$('projectId').value='';
+  $('category').value='Project';$('sortOrder').value=0;$('editorTitle').textContent='Add a project';
+  $('delete').classList.add('admin-hidden');$('coverHint').textContent='Upload JPG, PNG, WebP or AVIF, max 10 MB.';
+  $('savemsg').classList.add('admin-hidden')
+}
+async function loadProjects(){
+  const {data,error}=await db.from('portfolio_projects').select('*').order('sort_order').order('created_at',{ascending:false});
+  if(error){$('projectList').textContent='We couldn’t load projects just now. '+error.message;return}
+  $('projectList').innerHTML='';
+  if(!data.length){$('projectList').textContent='No projects yet. Add your first one ✨';return}
+  data.forEach(p=>{
+    const el=document.createElement('div');el.className='admin-item';
+    const left=document.createElement('div');left.innerHTML='<strong></strong><span class="admin-tag"></span>';
+    left.querySelector('strong').textContent=p.title;left.querySelector('.admin-tag').textContent=p.category||'Project';
+    const right=document.createElement('div');right.className='admin-row';
+    const badge=document.createElement('span');badge.className='admin-status '+(p.is_published?'live':'');
+    badge.textContent=p.is_published?'Published':'Draft';
+    const edit=document.createElement('button');edit.type='button';edit.className='admin-btn secondary';edit.textContent='Edit';
+    edit.onclick=()=>editProject(p);right.append(badge,edit);el.append(left,right);$('projectList').append(el)
+  })
+}
+function editProject(p){
+  $('projectId').value=p.id;$('title').value=p.title;$('slug').value=p.slug;$('category').value=p.category;
+  $('summary').value=p.summary;$('description').value=p.description;$('liveUrl').value=p.live_url||'';
+  $('sortOrder').value=p.sort_order;$('published').checked=p.is_published;$('coverHint').dataset.url=p.cover_image||'';
+  $('coverHint').textContent=p.cover_image?'Current cover image is saved. Choose another file to replace it.':'No cover image selected.';
+  $('editorTitle').textContent='Edit project';$('delete').classList.remove('admin-hidden');
+  $('savemsg').classList.add('admin-hidden');
+  window.scrollTo({top:document.querySelector('#projectForm').getBoundingClientRect().top+scrollY-30,behavior:'smooth'})
+}
+async function uploadCover(file){
+  if(!file)return null;
+  if(file.size>10*1024*1024)throw new Error('Image must be under 10 MB.');
+  if(!/^image\/(jpeg|png|webp|avif)$/.test(file.type))throw new Error('Choose a JPG, PNG, WebP or AVIF image.');
+  const ext=file.name.split('.').pop().toLowerCase();const path=Date.now()+'-'+crypto.randomUUID()+'.'+ext;
+  const {error}=await db.storage.from('portfolio-media').upload(path,file,{upsert:false,contentType:file.type});
+  if(error)throw error;
+  const {data}=db.storage.from('portfolio-media').getPublicUrl(path);return data.publicUrl
+}
+$('projectForm').onsubmit=async e=>{
+  e.preventDefault();$('save').disabled=true;
+  try{
+    let cover=$('coverHint').dataset.url||null;const file=$('coverFile').files[0];if(file)cover=await uploadCover(file);
+    const payload={title:$('title').value.trim(),slug:slugify($('slug').value),category:$('category').value.trim()||'Project',
+      summary:$('summary').value.trim(),description:$('description').value.trim(),live_url:$('liveUrl').value.trim()||null,
+      sort_order:Number($('sortOrder').value)||0,is_published:$('published').checked,cover_image:cover,updated_at:new Date().toISOString()};
+    const q=$('projectId').value?db.from('portfolio_projects').update(payload).eq('id',$('projectId').value):db.from('portfolio_projects').insert(payload);
+    const {error}=await q;if(error)throw error;
+    $('savemsg').textContent='Saved. Your portfolio is up to date.';$('savemsg').classList.remove('admin-hidden');
+    clearForm();await loadProjects()
+  }catch(err){$('savemsg').textContent=friendlyAuthError(err);$('savemsg').classList.remove('admin-hidden')}
+  finally{$('save').disabled=false}
+};
+$('delete').onclick=async()=>{
+  const id=$('projectId').value;if(!id||!confirm('Remove this project from the portfolio?'))return;
+  const {error}=await db.from('portfolio_projects').delete().eq('id',id);
+  if(error){$('savemsg').textContent=error.message;$('savemsg').classList.remove('admin-hidden')}
+  else{clearForm();await loadProjects()}
+};
+verifyAdmin();
 
 </script>
 </body>
