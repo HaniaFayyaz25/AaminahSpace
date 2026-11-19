@@ -305,3 +305,32 @@ footer{margin-top:80px;border-top:1px solid var(--line);background:var(--surface
   .reveal{transition:none}
   html{scroll-behavior:auto}
 }
+
+
+/* Evidence galleries: original portfolio screenshots, responsive and zoomable */
+.evidence-section{margin:34px 0 42px;padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.evidence-section>h2{font-family:var(--font-display);font-size:clamp(28px,4vw,42px);line-height:1.05;margin:8px 0 22px}
+.evidence-gallery,.review-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.evidence-shot{display:flex;flex-direction:column;gap:9px;min-width:0;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--ink);transition:transform .25s ease,box-shadow .25s ease}
+.evidence-shot:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(40,23,18,.10)}
+.evidence-shot img{display:block;width:100%;height:auto;max-height:620px;object-fit:contain;border-radius:8px;background:#f3eee5}
+.evidence-shot span{font-size:12px;letter-spacing:.04em;color:var(--muted);padding:2px 4px 4px}
+.evidence-wide{grid-column:1/-1}
+.evidence-wide img{max-height:560px}
+.evidence-case3{max-width:520px}
+.review-evidence-grid{grid-template-columns:1.35fr 1fr 1fr;align-items:stretch}
+.review-evidence-grid .evidence-shot{height:100%}
+.review-evidence-grid .evidence-shot img{height:100%;max-height:410px;object-fit:contain}
+.review-evidence-grid .review-wide img{object-fit:contain}
+.portfolio-download{border:1px solid var(--line)}
+.portfolio-actions{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:700px){
+ .evidence-gallery{grid-template-columns:1fr}
+ .evidence-wide{grid-column:auto}
+ .review-evidence-grid{grid-template-columns:1fr}
+ .review-evidence-grid .evidence-shot img{max-height:460px}
+ .evidence-section{margin:26px 0;padding:20px 0}
+ .evidence-shot{padding:8px}
+ .portfolio-actions{width:100%}
+ .portfolio-actions .btn{flex:1;justify-content:center}
+}
