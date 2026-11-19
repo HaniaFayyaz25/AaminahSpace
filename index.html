@@ -325,6 +325,11 @@
       <div><p class="eyebrow" style="margin:0">Complete creative portfolio</p><p style="margin:8px 0 0"><strong>All case studies, design highlights and client evidence.</strong></p></div>
       <div class="portfolio-actions"><a class="btn btn-dark" href="src/cv/Aaminah-Creative-Portfolio.pdf" download>Download full portfolio PDF ↓</a><a class="btn btn-outline" href="src/cv/Aaminah-Creative-Portfolio.pdf" download>Download PDF ↓</a></div>
     </div>
+    <section class="studio-projects block-tight" aria-labelledby="studio-projects-title">
+      <p class="eyebrow reveal">Recently added</p>
+      <h2 class="display-2 reveal" id="studio-projects-title">More work, <span class="italic">as it happens.</span></h2>
+      <div id="studioProjectGrid" class="portfolio-grid" aria-live="polite"><p class="muted">Loading recent projects…</p></div>
+    </section>
     <div class="filters reveal" role="group" aria-label="Filter projects">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="identity">Brand identity</button>
@@ -534,6 +539,7 @@
   <div class="copy">&copy; <span id="year">2026</span> Aaminah Khan &middot; AAMINAHSPACE &middot; Content drawn from the original portfolio PDF; placeholders clearly marked where source imagery was not machine-readable.</div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* AAMINAHSPACE app - inlined copy of src/app.js (kept in sync for reliable preview) */
 (function(){
@@ -677,8 +683,31 @@
       });
     }
   }
+  async function initDynamicProjects(){
+    const grid=document.getElementById("studioProjectGrid");
+    if(!grid || !window.supabase) return;
+    const client=window.supabase.createClient("https://nuxeecznwbtxuxgbfkjq.supabase.co","sb_publishable_eUxu_ZKX2SeZTjw4m3p5og_31Rjs_qI");
+    const {data,error}=await client.from("portfolio_projects").select("id,title,category,summary,cover_image,live_url,sort_order").eq("is_published",true).order("sort_order").order("created_at",{ascending:false});
+    if(error){grid.innerHTML='<p class="muted">New projects will appear here soon.</p>';return;}
+    grid.innerHTML="";
+    if(!data || !data.length){grid.innerHTML='<p class="muted">New projects will appear here soon.</p>';return;}
+    data.forEach(p=>{
+      const card=document.createElement("article");card.className="p-card reveal studio-project-card";
+      const visual=document.createElement("div");visual.className="p-visual studio-project-visual";
+      if(p.cover_image){const img=document.createElement("img");img.src=p.cover_image;img.alt=p.title+" project cover";img.loading="lazy";visual.appendChild(img)}
+      else {const label=document.createElement("span");label.textContent=p.category||"Selected work";visual.appendChild(label)}
+      const body=document.createElement("div");body.className="p-body";
+      const eyebrow=document.createElement("p");eyebrow.className="eyebrow";eyebrow.textContent=p.category||"Selected work";
+      const title=document.createElement("h3");title.textContent=p.title;title.style.cssText="font-family:var(--font-display);font-size:30px;margin:0 0 8px";
+      const summary=document.createElement("p");summary.className="muted small";summary.textContent=p.summary||"A project by Aaminah Khan.";
+      body.append(eyebrow,title,summary);
+      if(p.live_url){const link=document.createElement("a");link.className="link-more";link.href=p.live_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Explore project ↗";body.appendChild(link)}
+      card.append(visual,body);grid.appendChild(card);
+    });
+    observeReveals();
+  }
   function boot(){
-    initMenu(); initContactForm(); initFilters(); initYear(); initAlive();
+    initMenu(); initContactForm(); initFilters(); initYear(); initAlive(); initDynamicProjects();
     show(currentRoute()); prefillFromHash(); observeReveals();
     if(window.lucide) try{ window.lucide.createIcons(); }catch(e){}
   }
