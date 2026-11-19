@@ -1,0 +1,14 @@
+AAMINAHSPACE static site
+=====================
+Files:
+- index.html (standalone, just open it or deploy as-is)
+- src/styles.css, src/app.js (kept for reference; the page runs from code inside index.html)
+- src/portrait.jpg, src/cv/Aaminah-Khan-CV.pdf
+
+Put on Vercel:
+1. Unzip this file.
+2. Go to vercel.com, New Project, upload the folder (or push it to GitHub first and import).
+3. No build settings needed. Done.
+
+Contact form: opens the visitor's email app addressed to khanaaminah3@gmail.com.
+To save messages to an inbox instead, add Formspree (see README in src/).
