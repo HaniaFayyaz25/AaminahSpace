@@ -377,3 +377,78 @@ body.admin-mode > footer{display:none!important}
 .admin-studio .admin-tag{display:block;margin-top:4px}
 .admin-studio .admin-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .admin-studio .admin-status{white-space:nowrap}
+
+
+/* Studio sign-in: welcoming, clear and easy to use. */
+.admin-studio .admin-auth{
+  max-width:520px;
+  margin:34px 0 70px;
+  padding:clamp(26px,4vw,42px);
+  border:1px solid color-mix(in srgb,var(--brown) 16%,var(--line));
+  border-radius:12px;
+  box-shadow:0 18px 55px rgba(48,35,27,.07);
+}
+.admin-studio .admin-auth-kicker{
+  display:flex;align-items:center;gap:9px;
+  color:var(--brown);font-size:10px;font-weight:700;
+  letter-spacing:.16em;margin-bottom:18px;
+}
+.admin-studio .admin-spark{
+  display:grid;place-items:center;width:27px;height:27px;
+  border-radius:50%;background:color-mix(in srgb,var(--brown) 10%,var(--surface));
+  font-size:16px;letter-spacing:0;
+}
+.admin-studio .admin-auth .admin-formhead{
+  font-size:clamp(34px,5vw,43px);line-height:1.08;
+  margin:0 0 8px;letter-spacing:-.025em;
+}
+.admin-studio .admin-auth-intro{
+  color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 26px;
+}
+.admin-studio .admin-auth .admin-field{margin:0 0 18px}
+.admin-studio .admin-auth .admin-field label{
+  color:var(--ink);font-size:12px;letter-spacing:.015em;
+  text-transform:none;font-weight:600;margin-bottom:8px;
+}
+.admin-studio .admin-auth .admin-field input{
+  min-height:49px;border-radius:7px;background:var(--bg);
+  border-color:color-mix(in srgb,var(--ink) 15%,var(--line));
+  font-size:14px;transition:border-color .2s,box-shadow .2s;
+}
+.admin-studio .admin-auth .admin-field input:focus{
+  outline:none;border-color:var(--brown);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--brown) 12%,transparent);
+}
+.admin-studio .admin-primary-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;min-height:49px;padding:0 18px;border-radius:7px;
+  font-size:12px;letter-spacing:.045em;text-transform:none;
+}
+.admin-studio .admin-primary-btn span{font-size:18px;font-weight:400}
+.admin-studio .admin-auth-links{
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;margin-top:20px;
+}
+.admin-studio .admin-text-btn{
+  border:0;background:transparent;padding:3px 0;color:var(--brown);
+  font:600 12px var(--font-body);cursor:pointer;text-align:left;
+}
+.admin-studio .admin-text-btn:hover{text-decoration:underline;text-underline-offset:3px}
+.admin-studio .admin-auth-note{
+  display:flex;gap:9px;align-items:flex-start;
+  margin:24px 0 0;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:12px;line-height:1.6;
+}
+.admin-studio .admin-auth-note span{color:var(--brown)}
+.admin-studio .admin-notice{
+  border-radius:7px;padding:13px 15px;line-height:1.55;
+  font-size:13px;margin-top:18px;
+}
+.admin-studio .admin-notice.is-info{background:color-mix(in srgb,#d9e5e0 38%,var(--surface));border-color:#d9e5e0;color:#31564a}
+.admin-studio .admin-notice.is-success{background:color-mix(in srgb,#d9e5e0 45%,var(--surface));border-color:#b9d0c5;color:#31564a}
+.admin-studio .admin-notice.is-error{background:color-mix(in srgb,#f4e8df 55%,var(--surface));border-color:#e8cfc0;color:#80513d}
+.admin-studio .admin-auth button:disabled{opacity:.65;cursor:wait;transform:none}
+@media(max-width:540px){
+  .admin-studio .admin-auth{margin-top:24px;padding:24px 20px}
+  .admin-studio .admin-auth-links{align-items:flex-start;flex-direction:column;gap:13px}
+}
