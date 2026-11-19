@@ -350,3 +350,10 @@ footer{margin-top:80px;border-top:1px solid var(--line);background:var(--surface
 .evidence-wide img{max-height:520px}
 .evidence-single{max-width:760px}
 @media(max-width:760px){.evidence-case{grid-template-columns:1fr;gap:20px}.evidence-case-copy{position:static}.evidence-gallery{gap:9px}.evidence-shot{padding:6px}.evidence-shot figcaption{font-size:.7rem}.portfolio-evidence{margin-top:54px}}
+
+/* Dynamic projects published from AAMINAHSPACE Studio */
+.studio-projects{margin:clamp(52px,8vw,96px) 0 38px;padding-top:34px;border-top:1px solid var(--line)}
+.studio-project-visual{min-height:230px;display:grid;place-items:center;background:var(--surface-2,#eee8dc);overflow:hidden}
+.studio-project-visual img{width:100%;height:100%;min-height:230px;max-height:320px;object-fit:cover;display:block}
+.studio-project-visual span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.studio-project-card .p-body{min-height:160px}
