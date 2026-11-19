@@ -614,10 +614,11 @@
       const subject = encodeURIComponent("Website inquiry - " + name + " (" + type + ")");
       const body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nBrand: " + brand + "\nSupport: " + type + "\n\n" + msg);
       const composeUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=khanaaminah3%40gmail.com&su=" + subject + "&body=" + body;
-      const composeWindow = window.open(composeUrl, "_blank", "noopener,noreferrer");
+      const composeWindow = window.open(composeUrl, "_blank");
       if(!composeWindow){
         window.location.assign(composeUrl);
       } else {
+        composeWindow.opener = null;
         document.getElementById("formSuccess").classList.add("show");
         document.getElementById("successName").textContent = ", " + name;
       }
